@@ -12,6 +12,8 @@ import MetalKit
 
 class ViewController: UIViewController, MTKViewDelegate
 {
+    let highlightsOnly = false
+    
     // MARK: Metal Objects
     
     let device = MTLCreateSystemDefaultDevice()
@@ -176,27 +178,49 @@ class ViewController: UIViewController, MTKViewDelegate
             commandBuffer,
             sourceTexture: imageTexture,
             destinationTexture: rotatedTexture)
+
+        if highlightsOnly
+        {
+            rotate.encodeToCommandBuffer(
+                commandBuffer,
+                sourceTexture: imageTexture,
+                destinationTexture: rotatedTexture)
+            
+            threshold.encodeToCommandBuffer(
+                commandBuffer,
+                sourceTexture: rotatedTexture,
+                destinationTexture: thresholdTexture)
+            
+            dilate.encodeToCommandBuffer(
+                commandBuffer,
+                sourceTexture: thresholdTexture,
+                destinationTexture: dilatedTexture)
+            
+            additionalCompositing.encodeToCommandBuffer(
+                commandBuffer,
+                primaryTexture: rotatedTexture,
+                secondaryTexture: dilatedTexture,
+                destinationTexture: compositedTexture)
+            
+            blur.encodeToCommandBuffer(
+                commandBuffer,
+                sourceTexture: compositedTexture,
+                destinationTexture: currentDrawable.texture)
+        }
+        else
+        {
+            dilate.encodeToCommandBuffer(
+                commandBuffer,
+                sourceTexture: imageTexture,
+                destinationTexture: dilatedTexture)
+            
+            blur.encodeToCommandBuffer(
+                commandBuffer,
+                sourceTexture: dilatedTexture,
+                destinationTexture: currentDrawable.texture)
+        }
         
-        threshold.encodeToCommandBuffer(
-            commandBuffer,
-            sourceTexture: rotatedTexture,
-            destinationTexture: thresholdTexture)
-        
-        dilate.encodeToCommandBuffer(
-            commandBuffer,
-            sourceTexture: thresholdTexture,
-            destinationTexture: dilatedTexture)
-        
-        additionalCompositing.encodeToCommandBuffer(
-            commandBuffer,
-            primaryTexture: rotatedTexture,
-            secondaryTexture: dilatedTexture,
-            destinationTexture: compositedTexture)
-        
-        blur.encodeToCommandBuffer(
-            commandBuffer,
-            sourceTexture: compositedTexture,
-            destinationTexture: currentDrawable.texture)
+
         
         commandBuffer.presentDrawable(imageView.currentDrawable!)
         
