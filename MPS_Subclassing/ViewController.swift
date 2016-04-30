@@ -101,7 +101,11 @@ class ViewController: UIViewController, MTKViewDelegate
             }
         }
         
-        let dilate = MPSImageDilate(device: self.device!, kernelWidth: size, kernelHeight: size, values: probe)
+        let dilate = MPSImageDilate(
+            device: self.device!,
+            kernelWidth: size,
+            kernelHeight: size,
+            values: probe)
         
         dilate.edgeMode = .Clamp
         
@@ -169,10 +173,10 @@ class ViewController: UIViewController, MTKViewDelegate
         
         let commandBuffer = commandQueue.commandBuffer()
         
-        let rotatedTexture = newTexture(imageTexture.width, height: imageTexture.height)
-        let thresholdTexture = newTexture(imageTexture.width, height: imageTexture.height)
-        let dilatedTexture = newTexture(imageTexture.width, height: imageTexture.height)
-        let compositedTexture = newTexture(imageTexture.width, height: imageTexture.height)
+        let rotatedTexture = newTexture(width: imageTexture.width, height: imageTexture.height)
+        let thresholdTexture = newTexture(width: imageTexture.width, height: imageTexture.height)
+        let dilatedTexture = newTexture(width: imageTexture.width, height: imageTexture.height)
+        let compositedTexture = newTexture(width: imageTexture.width, height: imageTexture.height)
         
         rotate.encodeToCommandBuffer(
             commandBuffer,
@@ -211,7 +215,7 @@ class ViewController: UIViewController, MTKViewDelegate
         {
             dilate.encodeToCommandBuffer(
                 commandBuffer,
-                sourceTexture: imageTexture,
+                sourceTexture: rotatedTexture,
                 destinationTexture: dilatedTexture)
             
             blur.encodeToCommandBuffer(
@@ -227,7 +231,7 @@ class ViewController: UIViewController, MTKViewDelegate
         commandBuffer.commit();
     }
     
-    func newTexture(width: Int, height: Int) -> MTLTexture
+    func newTexture(width width: Int, height: Int) -> MTLTexture
     {
         let textureDesciptor = MTLTextureDescriptor.texture2DDescriptorWithPixelFormat(
             MTLPixelFormat.RGBA8Unorm,
